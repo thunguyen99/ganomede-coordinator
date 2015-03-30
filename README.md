@@ -24,7 +24,7 @@ API
 
 All requests made to the coordinator API require an auth token, passed in the request URL.
 
-# Single Game [/coordinator/v1/auth/:token/games/:id]
+# Single Game [/coordinator/v1/auth/:token/:type/:version/games/:id]
 
     + Parameters
         + token (string) ... User authentication token
@@ -70,7 +70,7 @@ The only changes allowed using this method are:
 
 Will reply with status 423 otherwise.
 
-# Games Collection [/coordinator/v1/auth/:token/games/active]
+# Active Games Collection [/coordinator/v1/auth/:token/:type/:version/active-games]
 
     + Parameters
         + token (string) ... User authentication token
@@ -90,6 +90,11 @@ List all the "active" games of the authenticated player.
         "type": "triominos/v1",
         "players": [ "some_username", "amigo" ],
     }]
+
+# Inactive Games Collection [/coordinator/v1/auth/:token/games]
+
+    + Parameters
+        + token (string) ... User authentication token
 
 ## Create a game [POST]
 

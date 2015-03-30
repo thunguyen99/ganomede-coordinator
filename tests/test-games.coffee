@@ -26,7 +26,7 @@ describe 'Games', () ->
           expect(err).to.be(null)
           model = games.newModel {}
           expect(model.db).to.be(12345)
-          collection = games.activeGames "my-username"
+          collection = games.activeGames "rule/v1", "my-username"
           expect(collection.db).to.be(12345)
           done()
 
