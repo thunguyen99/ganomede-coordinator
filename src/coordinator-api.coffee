@@ -2,7 +2,6 @@ log = require "./log"
 authdb = require "authdb"
 restify = require "restify"
 config = require '../config'
-Games = require './games-collection'
 
 sendError = (err, next) ->
   log.error err

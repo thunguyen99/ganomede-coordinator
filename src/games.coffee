@@ -1,4 +1,5 @@
 couchbone = require "./couchbone"
+DB = require "./couchdb"
 
 class Module
   constructor: () ->
@@ -8,7 +9,6 @@ class Module
   initialize: (options = {}) ->
     @db = options.db
     if !@db
-      DB = require "games-couch.coffee"
       DB.initialize config.couch, (err, ldb) ->
         @db = ldb
         if options.callback

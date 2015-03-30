@@ -2,7 +2,7 @@ log = require "./log"
 aboutApi = require "./about-api"
 pingApi = require "./ping-api"
 coordinatorApi = require "./coordinator-api"
-Games = require "./games-collection"
+Games = require "./games"
 games = new Games()
 
 addRoutes = (prefix, server) ->
