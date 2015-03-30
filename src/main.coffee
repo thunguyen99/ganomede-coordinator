@@ -2,6 +2,8 @@ log = require "./log"
 aboutApi = require "./about-api"
 pingApi = require "./ping-api"
 coordinatorApi = require "./coordinator-api"
+Games = require "./games-collection"
+games = new Games()
 
 addRoutes = (prefix, server) ->
   log.info "adding routes to #{prefix}"
@@ -13,12 +15,15 @@ addRoutes = (prefix, server) ->
   aboutApi.addRoutes prefix, server
 
   # Coordinator
-  api = coordinatorApi.create()
+  api = coordinatorApi.create
+    games: games
   api.addRoutes prefix, server
 
 initialize = (callback) ->
   log.info "initializing backend"
-  callback?()
+
+  games.initialize
+    callback: callback
 
 destroy = ->
   log.info "destroying backend"

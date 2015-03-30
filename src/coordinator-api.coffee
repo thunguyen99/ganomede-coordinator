@@ -2,6 +2,7 @@ log = require "./log"
 authdb = require "authdb"
 restify = require "restify"
 config = require '../config'
+Games = require './games-collection'
 
 sendError = (err, next) ->
   log.error err
@@ -20,6 +21,9 @@ coordinatorApi = (options = {}) ->
   authdbClient = options.authdbClient || authdb.createClient(
     host: config.authdb.host
     port: config.authdb.port)
+
+  # the games collection
+  games = options.games
 
   return addRoutes: addRoutes
 

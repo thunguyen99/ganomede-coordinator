@@ -14,7 +14,8 @@ module.exports = {
 
     // This is database name. Default one is test database, so we won't
     // drop production data by accidentally running tests.
-    name: process.env.COUCH_GAMES_DB_NAME || 'ganomede_games_test'
+    name: process.env.COUCH_GAMES_DB_NAME || 'ganomede_games_test',
+    designName: 'coordinator'
   },
 
   authdb: {
