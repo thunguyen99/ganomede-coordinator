@@ -17,7 +17,7 @@ class Model
     @db = db
     @fromCouch obj
 
-  fromCouch: () ->
+  fromCouch: (obj) ->
     Object.keys(obj).forEach (key) ->
       thisKey = key
       if @COUCH_KEYS_MAPPING.hasOwnProperty(key)
