@@ -1,34 +1,37 @@
 nano = require 'nano'
 restify = require 'restify'
 expect = require 'expect.js'
-#DB = require '../../src/challenges-api/db'
+DB = require '../src/couchdb'
 config = require '../config'
 samples = require './sample-data'
+log = require('../src/log').child(module:"test/helpers")
 
 clone = (obj) -> JSON.parse(JSON.stringify(obj))
 
-#initDb = (noSampleData, callback) ->
-#  if arguments.length == 1
-#    callback = noSampleData
-#    noSampleData = false
-#
-#  DB.initialize config.couch.name, config.type, config.couch.serverUri,
-#  (err, db) ->
-#    if (err)
-#      return callback(err)
-#
-#    if (noSampleData)
-#      return callback(null, db)
-#
-#    db.db.bulk {docs: samples.docs}, (err) ->
-#      callback(err, db)
-#
-#dropDb = (callback) ->
-#  nano(config.couch.serverUri).db.destroy(config.couch.name, callback)
-#
-#module.exports =
-#  initDb: initDb
-#  dropDb: dropDb
+initDb = (noSampleData, callback) ->
+  if arguments.length == 1
+    callback = noSampleData
+    noSampleData = false
+
+  DB.initialize config.couch,
+  (err, db) ->
+    log.info "initialization done"
+    if (err)
+      return callback(err)
+
+    if (noSampleData)
+      return callback(null, db)
+
+    log.info "bulk insert"
+    db.db.bulk {docs: samples.docs}, (err) ->
+      callback(err, db)
+
+dropDb = (callback) ->
+  nano(config.couch.serverUri).db.destroy(config.couch.name, callback)
+
+module.exports =
+  initDb: initDb
+  dropDb: dropDb
 #
 #  expectToEqlExceptSecondsToEnd: (left, right) ->
 #    arrLeft = clone(if Array.isArray(left) then left else [left])
@@ -60,4 +63,5 @@ clone = (obj) -> JSON.parse(JSON.stringify(obj))
 #          delete game.moveData
 #          body = if error then error.body else game
 #          callback(error, {}, {statusCode: code}, body)
-module.exports = {}
+
+# vim: ts=2:sw=2:et:

@@ -62,6 +62,7 @@ views = do () ->
 
 class DB
   constructor: (dbname, serverUri, designName) ->
+    @log = log.child DB:dbname
     @db = nano(serverUri).use(dbname)
     @designName = designName
 
@@ -69,7 +70,7 @@ class DB
   get: (id, callback) ->
     @db.get id, (err, doc, headers) ->
       if err && !(err.error == 'not_found' && err.reason == 'missing')
-        log.error 'Failed to retrieve Couch doc',
+        @log.error 'Failed to retrieve Couch doc',
           err: err,
           _id: id,
           headers: headers
@@ -84,7 +85,7 @@ class DB
   insert: (doc, customId, callback) ->
     cb = (err, result, headers) ->
       if (err)
-        log.error 'Failed to save doc to Couch',
+        @log.error 'Failed to save doc to Couch',
           err: err
           doc: doc
           customId: customId
@@ -198,47 +199,50 @@ class DB
   #    callback(null, entries)
 
   # callback(err, db_exists, design_doc)
-  #@_init_get_info: (db, callback) ->
-  #  db.get "_design/#{designName}", (err, doc, headers) ->
-  #    if err && err.error != 'not_found'
-  #      log.error 'Faield to query design doc',
-  #        err: err
-  #        headers: headers
-  #      return callback(err)
-  #
-  #    # 404
-  #    if err
-  #      if err.reason == 'no_db_file'
-  #        return callback(null, false, null)
-  #      else if err.reason == 'missing'
-  #        return callback(null, true, null)
-  #      else
-  #        return callback(err)
-  #
-  #    callback(null, true, doc)
+  @_init_get_info: (db, designName, callback) ->
+    db.get "_design/#{designName}", (err, doc, headers) ->
+      if err && err.error != 'not_found'
+        log.error 'Failed to query design doc',
+          err: err
+          headers: headers
+        return callback(err)
+  
+      # 404
+      if err
+        log.error err, "_design/#{designName}"
+        if err.reason == 'no_db_file'
+          return callback(null, false, null)
+        else if err.reason == 'missing'
+          return callback(null, true, null)
+        else
+          return callback(err)
+  
+      log.info "design exists"
+      callback(null, true, doc)
 
   # callback(err, insertResult, insertHeaders)
-  #@_init_save_views_if_different: (db, design, callback) ->
-  #  dbViews = design.views
-  #  changed = {}
-  #
-  #  for own name, mapReduce of views
-  #    if dbViews?[name]?.map != mapReduce.map
-  #      changed[name] = mapReduce
-  #
-  #  # Everything's in place
-  #  if Object.keys(changed).length == 0
-  #    return process.nextTick(callback.bind(null, null))
-  #
-  #  # Some stuff is different
-  #  log.info "Design doc in database `_design/#{designName}` is different from
-  #            design doc in app, recreating…",
-  #    db_views: {views: design.views}
-  #    app_views: {views: views}
-  #    diff: changed
-  #
-  #  doc = {views: views, _rev: design._rev}
-  #  db.insert doc, "_design/#{designName}", callback
+  @_init_save_views_if_different: (db, designName, design, callback) ->
+    dbViews = design.views
+    changed = {}
+  
+    for own name, mapReduce of views
+      if dbViews?[name]?.map != mapReduce.map
+        changed[name] = mapReduce
+  
+    # Everything's in place
+    if Object.keys(changed).length == 0
+      log.info "all views are in place"
+      return process.nextTick(callback.bind(null, null))
+  
+    # Some stuff is different
+    log.info "Design doc in database `_design/#{designName}` is different from
+              design doc in app, recreating…",
+      db_views: {views: design.views}
+      app_views: {views: views}
+      diff: changed
+  
+    doc = {views: views, _rev: design._rev}
+    db.insert doc, "_design/#{designName}", callback
 
   # This will create Couch database @dbname at @serverUri
   # and create design doc _design/designName with {views: views}.
@@ -253,7 +257,7 @@ class DB
     serverUri = options.serverUri
     designName = options.designName
 
-    log.info "Initializing database `#{dbname}` at `#{serverUri}`"
+    log.info "Initializing database", options
     unless serverUri && dbname
       throw new Error('serverUri and dbname are required')
 
@@ -261,7 +265,7 @@ class DB
     db = couch.use(dbname)
 
     vasync.waterfall [
-      (cb) -> DB._init_get_info(db, cb)
+      (cb) -> DB._init_get_info(db, designName, cb)
       (db_exists, design, cb) ->
         if !design
           if !db_exists
@@ -273,19 +277,19 @@ class DB
           insertFn = db.insert.bind(db, doc, "_design/#{designName}", cb)
           return if db_exists then insertFn() else createFn(insertFn)
 
-        # Check for missing
-        DB._init_save_views_if_different(db, design, cb)
+        log.info "Check for missing"
+        DB._init_save_views_if_different(db, designName, design, cb)
 
     ], (err, results) ->
       if (err)
         log.error "Failed to initialize DB",
           err: err
           dbname: dbname
-          type: type
           serverUri: serverUri
         return callback(err)
 
-      callback(null, new DB(dbname, type, serverUri, designName))
+      log.info "create DB"
+      callback(null, new DB(dbname, serverUri, designName))
 
 module.exports = DB
 # vim: ts=2:sw=2:et:
