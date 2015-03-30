@@ -1,7 +1,7 @@
 assert = require "assert"
-api = require "../src/turngame-api"
+api = require "../src/coordinator-api"
 
-describe "turngame-api", ->
+describe "coordinator-api", ->
 
   it "should be tested", ->
 

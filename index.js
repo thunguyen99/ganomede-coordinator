@@ -22,12 +22,7 @@ else {
     // worker
     var restify = require("restify");
     var main = require("./src/main");
-
-    var server = restify.createServer();
-
-    // Enable restify plugins
-    server.use(restify.bodyParser());
-    server.use(restify.gzipResponse());
+    var server = require('./src/server');
 
     // Intitialize backend, add routes
     main.initialize();

@@ -1,7 +1,7 @@
-Turn-Game
----------
+Coordinator
+-----------
 
-Manage a users' games list.
+Manage the users games list.
 
 Relations
 ---------

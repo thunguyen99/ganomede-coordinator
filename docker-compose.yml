@@ -1,0 +1,16 @@
+app:
+    build: .
+    command: make BUNYAN_LEVEL=0 run
+    volumes:
+     - src:/home/app/code/src
+     - tests:/home/app/code/tests
+     - doc:/home/app/code/doc
+     - Makefile:/home/app/code/Makefile
+     - package.json:/home/app/code/package.json
+    ports:
+     - "8000:8000"
+    links:
+     - couchGames:couch_games
+
+couchGames:
+    image: klaemo/couchdb:1.6.1
