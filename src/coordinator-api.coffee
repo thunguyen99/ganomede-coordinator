@@ -1,16 +1,26 @@
-postGame = (req, res, next) ->
-  res.send ok:true
-  next()
+log = require "./log"
+authdb = require "authdb"
+restify = require "restify"
+config = require '../config'
 
-postMove = (req, res, next) ->
+sendError = (err, next) ->
+  log.error err
+  next err
+
+postGame = (req, res, next) ->
   res.send ok:true
   next()
 
 addRoutes = (prefix, server) ->
   server.post "/#{prefix}/games", postGame
-  server.post "/#{prefix}/moves", postMove
 
 coordinatorApi = (options = {}) ->
+
+  # configure authdb client
+  authdbClient = options.authdbClient || authdb.createClient(
+    host: config.authdb.host
+    port: config.authdb.port)
+
   return addRoutes: addRoutes
 
 module.exports =

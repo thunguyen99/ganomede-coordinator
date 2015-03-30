@@ -3,9 +3,7 @@ require('coffee-script/register');
 var cluster = require("cluster")
 var log = require("./src/log")
 var pkg = require("./package.json");
-
-var port = +process.env.PORT || 8000;
-var routePrefix = process.env.ROUTE_PREFIX || pkg.api;
+var config = require("./config");
 
 if (cluster.isMaster) {
 
@@ -26,7 +24,7 @@ else {
 
     // Intitialize backend, add routes
     main.initialize();
-    main.addRoutes(routePrefix, server);
+    main.addRoutes(config.routePrefix, server);
 
     // Handle uncaughtException, kill the worker
     server.on('uncaughtException', function (req, res, route, err) {
@@ -62,7 +60,7 @@ else {
     });
 
     // Start the server
-    server.listen(port, function() {
+    server.listen(config.port, function() {
         log.info(server.name + " listening at " + server.url);
     });
 }

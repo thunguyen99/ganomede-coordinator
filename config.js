@@ -1,0 +1,24 @@
+var url = require('url');
+var pkg = require("./package.json");
+
+module.exports = {
+  port: +process.env.PORT || 8000,
+  routePrefix: process.env.ROUTE_PREFIX || pkg.api,
+
+  couch: {
+    serverUri: url.format({
+      protocol: 'http',
+      hostname: process.env.COUCH_GAMES_PORT_5984_TCP_ADDR || 'localhost',
+      port: +process.env.COUCH_GAMES_PORT_5984_TCP_PORT || 5984
+    }),
+
+    // This is database name. Default one is test database, so we won't
+    // drop production data by accidentally running tests.
+    name: process.env.COUCH_GAMES_DB_NAME || 'ganomede_games_test'
+  },
+
+  authdb: {
+    host: process.env.REDIS_AUTH_PORT_6379_TCP_ADDR || 'localhost',
+    port: +process.env.REDIS_AUTH_PORT_6379_TCP_PORT || 6379
+  }
+};

@@ -16,6 +16,8 @@ Configuration
 
  * `COUCH_GAMES_PORT_5984_TCP_ADDR` - IP of the games couchdb
  * `COUCH_GAMES_PORT_5984_TCP_PORT` - Port of the games couchdb
+ * `REDIS_AUTH_PORT_6379_TCP_ADDR` - IP of the AuthDB redis
+ * `REDIS_AUTH_PORT_6379_TCP_PORT` - Port of the AuthDB redis
 
 API
 ---
