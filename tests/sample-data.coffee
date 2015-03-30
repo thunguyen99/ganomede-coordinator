@@ -6,9 +6,9 @@ createGame = (id, p1, p2) ->
   url: "http://fovea.cc"
 
 docs = [
-  createGame "game:1", "p1", "p2"
-  createGame "game:2", "p3", "p1"
-  createGame "game:3", "p2", "p3"
+  createGame "0000000000000000001", "p1", "p2"
+  createGame "0000000000000000002", "p3", "p1"
+  createGame "0000000000000000003", "p2", "p3"
 ]
 
 module.exports =

@@ -78,16 +78,47 @@ describe 'Games', () ->
       games = new Games
       collection = null
       vasync.waterfall [
+
+        # Initialize DB
         (cb) ->
           games.initialize callback: (err) -> cb(err)
+
+        # Fetch active games
         (cb) ->
           collection = games.activeGames("rule/v1", "p1")
-          collection.fetch cb
+          collection.fetch (err) -> cb(err)
+
+        # Check that it's like samples
+        (cb) ->
+          expect(collection.models.length).to.equal(2)
+          expect(collection.models[0].id).to.equal("0000000000000000001")
+          expect(collection.models[1].id).to.equal("0000000000000000002")
+          cb()
+
+        # Insert a new model
+        (cb) ->
+          model = games.newModel
+            type: "rule/v1"
+            status: "active"
+            players: [ "p1", "p2", "p3" ]
+            url: "http://test"
+          model.save (err) -> cb(err)
+
+        # Fetch active games
+        (cb) ->
+          collection = games.activeGames("rule/v1", "p1")
+          collection.fetch (err) -> cb(err)
+
+        # Check that it's present in the list of active games
+        (cb) ->
+          expect(collection.models.length).to.equal(3)
+          expect(collection.models[0].id).to.equal("0000000000000000001")
+          expect(collection.models[1].id).to.equal("0000000000000000002")
+          expect(collection.models[2].type).to.equal("rule/v1")
+          expect(collection.models[2].url).to.equal("http://test")
+          cb()
       ], (err, results) ->
         expect(err).to.be(null)
-        expect(collection.models.length).to.equal(2)
-        expect(collection.models[0].id).to.equal("game:1")
-        expect(collection.models[1].id).to.equal("game:2")
         done()
       null
 
