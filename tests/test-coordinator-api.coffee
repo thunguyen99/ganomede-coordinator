@@ -17,7 +17,7 @@ go = supertest.bind(supertest, server)
 endpoint = (path) ->
   return "/#{config.routePrefix}#{path || ''}"
 
-describe "CoordinatorApi", ->
+describe "Coordinator API", ->
   authdb = fakeAuthdb.createClient()
 
   before (done) ->
@@ -63,19 +63,13 @@ describe "CoordinatorApi", ->
         .expect 200
         .end (err, res) ->
           expect(err).to.be(null)
-          expect(res.body[0].rev).not.to.be(null)
-          expect(res.body[1].rev).not.to.be(null)
-          rev0 = res.body[0].rev
-          rev1 = res.body[1].rev
           expect(res.body).to.eql([{
             id: '0000000000000000001'
-            rev: rev0
             type: 'rule/v1'
             players: [ 'p1', 'p2' ]
             url: 'http://fovea.cc'
           }, {
             id: '0000000000000000002'
-            rev: rev1
             type: 'rule/v1'
             players: [ 'p3', 'p1' ]
             url: 'http://fovea.cc'
@@ -91,9 +85,26 @@ describe "CoordinatorApi", ->
         .end (err, res) ->
           expect(err).to.be(null)
           samples.postGameRes.id = res.body.id
-          samples.postGameRes.rev = res.body.rev
           expect(res.body).to.eql(samples.postGameRes)
           done()
 
+  describe "POST /games/:id/activation", ->
+
+    it 'allows only waiting players to activate', (done) ->
+      id = samples.postGameRes.id
+      go()
+        .post endpoint("/auth/p3-token/games/#{id}/activation")
+        .expect 401, done
+
+    it 'allows waiting players to activate', (done) ->
+      id = samples.postGameRes.id
+      samples.postGameRes2.id = id
+      go()
+        .post endpoint("/auth/p2-token/games/#{id}/activation")
+        .expect 200
+        .end (err, res) ->
+          expect(err).to.be(null)
+          expect(res.body).to.eql(samples.postGameRes2)
+          done()
 
 # vim: ts=2:sw=2:et:

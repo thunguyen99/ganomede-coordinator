@@ -53,26 +53,26 @@ Possible `status`:
 
 When status is `inactive`, `waiting` will contains the list of username that didn't activate the game.
 
-# Single Game Activation [/coordinator/v1/auth/:token/:type/:version/games/:id/activation]
+# Single Game Activation [/coordinator/v1/auth/:token/games/:id/activation]
 
-## Edit a game [PUT]
+## Edit a game [POST]
 
-### body (application/json)
+### response [200] OK
 
     {
+        "id": "ab12345789",
+        "type": "triominos/v1",
+        "players": [ "some_username_1", "some_username_2" ],
         "status": "active",
-        "gameOverData": { ... only if status is "gameover" ... }
+        "url": "http://ganomede.fovea.cc:43301",
+        "waiting": [ "some_username_2" ] ... only if status is "inactive"
     }
-
-### response [204] No content
 
 ### response [423] Locked
 
 ### design note
 
-The only changes allowed using this method are:
- - to change "status" from "inactive" to "active"
- - to change "status" from "active" to "gameover"
+This is only allowed for inactive games to be called by a "waiting" user.
 
 Will reply with status 423 otherwise.
 

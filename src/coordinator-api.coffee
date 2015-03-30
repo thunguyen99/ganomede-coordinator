@@ -72,9 +72,7 @@ class CoordinatorApi
 
     # GET /games/:id
     getGame = (req, res, next) =>
-      json = req.params.game.toJSON()
-      delete json.rev
-      res.send json
+      res.send req.params.game.toJSON()
       next()
 
     # POST /games
@@ -97,8 +95,31 @@ class CoordinatorApi
         res.send model.toJSON()
         next()
 
+    # POST /games/:id/activation
+    postActivation = (req, res, next) =>
+      username = req.params.user.username
+      game = req.params.game
+      isInactive = (game.status == "inactive")
+      isWaiting = (true for p in game.waiting when p == username).length
+      if !isInactive or !isWaiting
+        err = new restify.InvalidContentError('invalid content')
+        return sendError err, next
+      game.waiting = (p for p in game.waiting when p != username)
+      if game.waiting.length == 0
+        delete game.waiting
+        game.status = "active"
+      game.save (err) ->
+        if err
+          return sendError(err, next)
+        res.send game.toJSON()
+        next()
+        # TODO: Send notification
+
     server.get "#{prefix}/auth/:authToken/games/:id",
       authMiddleware, gameMiddleware, getGame
+
+    server.post "#{prefix}/auth/:authToken/games/:id/activation",
+      authMiddleware, gameMiddleware, postActivation
 
     root = "/#{prefix}/auth/:authToken/:type/:version"
     server.get "#{root}/active-games", authMiddleware, getActiveGames

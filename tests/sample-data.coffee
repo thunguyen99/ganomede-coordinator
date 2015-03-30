@@ -20,10 +20,12 @@ module.exports =
     p1:
       token: 'p1-token'
       account: {username: 'p1'}
-
     p2:
       token: 'p2-token'
       account: {username: 'p2'}
+    p3:
+      token: 'p3-token'
+      account: {username: 'p3'}
 
   postGame:
     players: [ 'p1', 'p2' ]
@@ -32,6 +34,11 @@ module.exports =
     waiting: [ 'p2' ]
     type: 'rule/v1'
     status: "inactive"
+    url: config.gameServers[0]
+  postGameRes2:
+    players: [ 'p1', 'p2' ]
+    type: 'rule/v1'
+    status: "active"
     url: config.gameServers[0]
 
 # vim: ts=2:sw=2:et:
