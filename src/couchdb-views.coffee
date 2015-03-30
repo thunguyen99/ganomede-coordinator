@@ -8,6 +8,7 @@ views = do () ->
           for player in doc.players
             emit [doc.type, player, doc._id],
               id: doc._id
+              rev: doc._rev
               type: doc.type
               players: doc.players
               url: doc.url

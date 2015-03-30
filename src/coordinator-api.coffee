@@ -45,11 +45,11 @@ class CoordinatorApi
 
     getActiveGames = (req, res, next) =>
       type = "#{req.params.type}/#{req.params.version}"
-      collection = @game.activeGames type, req.params.user.username
+      collection = @games.activeGames type, req.params.user.username
       collection.fetch (err) ->
         if err
           return sendError err, next
-        res.send collection.models.toCouch()
+        res.send (m.toJSON() for m in collection.models)
         next()
 
     postGame = (req, res, next) =>

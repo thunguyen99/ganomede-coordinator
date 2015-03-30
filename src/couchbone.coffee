@@ -43,6 +43,15 @@ class Model
       doc._rev = @rev
     return doc
 
+  toJSON: () ->
+    doc = @toCouch()
+    if @hasOwnProperty("id")
+      doc.id = @id
+    if @hasOwnProperty("rev")
+      delete doc._rev
+      doc.rev = @rev
+    return doc
+
   fetch: (callback) ->
     if !@id?
       return callback new Error("CantFetch:NoID")

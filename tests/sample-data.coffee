@@ -13,4 +13,14 @@ docs = [
 
 module.exports =
   docs: docs
+
+  users:
+    p1:
+      token: 'p1-token'
+      account: {username: 'p1'}
+
+    p2:
+      token: 'p2-token'
+      account: {username: 'p2'}
+
 # vim: ts=2:sw=2:et:
