@@ -31,7 +31,46 @@ describe 'Games', () ->
           done()
 
   describe 'GameModel', () ->
+
     it 'should fetch content from the database', (done) ->
-      done()
+      games = new Games
+      model = null
+      vasync.waterfall [
+        (cb) ->
+          games.initialize callback: (err) -> cb(err)
+        (cb) ->
+          model = games.newModel id:samples.docs[0]._id
+          model.fetch cb
+      ], (err, results) ->
+        expect(err).to.be(null)
+        expect(model.type).to.be(samples.docs[0].type)
+        expect(model.players[1]).to.be(samples.docs[0].players[1])
+        expect(model.status).to.be(samples.docs[0].status)
+        done()
+
+    it 'should save entries to the DB', (done) ->
+      games = new Games
+      model = null
+      rev = null
+      vasync.waterfall [
+        (cb) ->
+          games.initialize callback: (err, instance) ->
+            expect(err).to.be(null)
+            cb err
+        (cb) ->
+          model = games.newModel
+            data: 12345
+          model.save (err) -> cb(err)
+        (cb) ->
+          expect(model.id).not.to.be(null)
+          expect(model.rev).not.to.be(null)
+          model.data = 54321
+          model.save (err) -> cb(err)
+          rev = model.rev
+      ], (err, results) ->
+        expect(err).to.be(null)
+        expect(model.rev).not.to.be(rev)
+        expect(model.data).to.be(54321)
+        done()
 
 # vim: ts=2:sw=2:et:

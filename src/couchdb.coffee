@@ -83,7 +83,7 @@ class DB
 
   # Saves doc to couch
   insert: (doc, customId, callback) ->
-    cb = (err, result, headers) ->
+    cb = (err, result, headers) =>
       if (err)
         @log.error 'Failed to save doc to Couch',
           err: err

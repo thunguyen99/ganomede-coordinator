@@ -1,15 +1,12 @@
-gameID = 1
-nextGameID = () -> "game:#{gameID++}"
-
-createGame = () ->
-  _id: nextGameID()
+createGame = (id) ->
+  _id: id
   type: "rule/v1",
   players: [ "p1", "p2" ]
   status: "inactive"
 
 docs = [
-  createGame()
-  createGame()
+  createGame "game:1"
+  createGame "game:2"
 ]
 
 module.exports =

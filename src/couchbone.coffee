@@ -3,7 +3,9 @@ class Model
     # This keys don't get saved to couch
     @COUCH_KEYS_IGNORED = [
       'id'
+      'rev'
       'db'
+      'ok'
       'COUCH_KEYS_IGNORED'
       'COUCH_KEYS_MAPPING'
     ]
@@ -12,10 +14,12 @@ class Model
     # (null means key won't be present)
     @COUCH_KEYS_MAPPING =
       _id: 'id'
-      _rev: null
+      _rev: 'rev'
+      ok: null
 
     @db = db
-    @fromCouch obj
+    if (obj)
+      @fromCouch obj
 
   fromCouch: (obj) ->
     Object.keys(obj).forEach (key) ->
@@ -35,17 +39,20 @@ class Model
       if -1 == @COUCH_KEYS_IGNORED.indexOf(key)
         doc[key] = this[key]
     , @
-
+    if @hasOwnProperty("rev")
+      doc._rev = @rev
     return doc
 
   fetch: (callback) ->
-    @db.get @id, (err, doc) ->
+    if !@id?
+      return callback new Error("CantFetch:NoID")
+    @db.get @id, (err, doc) =>
       if !err
         @fromCouch doc
       callback err, @
 
   save: (callback) ->
-    @db.insert @toCouch(), @hasOwnProperty('id') && @id, (err, result) ->
+    @db.insert @toCouch(), @hasOwnProperty('id') && @id, (err, result) =>
       if !err
         @fromCouch result
       callback err, @

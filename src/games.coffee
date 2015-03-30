@@ -1,5 +1,6 @@
 couchbone = require "./couchbone"
 DB = require "./couchdb"
+config = require "../config"
 
 class Module
   constructor: () ->
