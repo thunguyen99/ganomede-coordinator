@@ -62,13 +62,17 @@ class Collection
     @db = db
     @Model = Model
     @models = []
+    @fetchOptions = {}
 
   fromArray: (rows) ->
     @models = rows
-      .map (r) -> new @Model(r, @db)
+      .map (r) => @_newModel(r)
+
+  _newModel: (obj) ->
+    new @Model(obj, @db)
 
   newModel: (obj) ->
-    m = new @Model(obj, @db)
+    m = @_newModel(obj, @db)
     @models.push m
     m
 
@@ -86,6 +90,9 @@ class Collection
     if options.view
       view = options.view
       delete options.view
+
+    for own k, v of @fetchOptions
+      options[k] = v
   
     # before = timestamp(options.before)
     # options =
@@ -95,18 +102,9 @@ class Collection
     # if (before)
     #   options.startkey.push(1 - before)
   
-    @db.view design , view, options, (err, result, headers) ->
+    @db.view design, view, options, (err, values) =>
       if (err)
-        # Query parse errors have lower severity level, so we use WARN for them.
-        method = if err.error == 'query_parse_error' then 'warn' else 'error'
-        log[method] "Failed to query _#{design}/#{view}",
-          err: err,
-          options: options
-          headers: headers
-  
         return callback(err)
-  
-      values = result.rows.map (row) -> row.value
       @fromArray values
       callback(null, @)
 

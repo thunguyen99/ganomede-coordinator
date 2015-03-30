@@ -26,7 +26,7 @@ describe 'Games', () ->
           expect(err).to.be(null)
           model = games.newModel {}
           expect(model.db).to.be(12345)
-          collection = games.newCollection "my-username"
+          collection = games.activeGames "my-username"
           expect(collection.db).to.be(12345)
           done()
 
@@ -72,5 +72,23 @@ describe 'Games', () ->
         expect(model.rev).not.to.be(rev)
         expect(model.data).to.be(54321)
         done()
+
+  describe 'GameCollection', () ->
+    it 'should fetch content from the database', (done) ->
+      games = new Games
+      collection = null
+      vasync.waterfall [
+        (cb) ->
+          games.initialize callback: (err) -> cb(err)
+        (cb) ->
+          collection = games.activeGames("rule/v1", "p1")
+          collection.fetch cb
+      ], (err, results) ->
+        expect(err).to.be(null)
+        expect(collection.models.length).to.equal(2)
+        expect(collection.models[0].id).to.equal("game:1")
+        expect(collection.models[1].id).to.equal("game:2")
+        done()
+      null
 
 # vim: ts=2:sw=2:et:

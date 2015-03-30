@@ -7,64 +7,14 @@ DEFAULT_LIMIT = 25
 timestamp = (n) ->
   if n instanceof Date then n.getTime() else n
 
-views = do () ->
-  result = {}
-  funcs =
-    # Challenges
-    # sorted by (start desc)
-    'challenges':
-      map: (doc) ->
-        if doc._id.slice(0, 10) == 'challenge:'
-          emit [doc.type, -doc.start],
-            id: doc._id
-            start: doc.start
-            end: doc.end,
-            type: doc.type
-            gameData: doc.gameData
-
-    # Entries by challenge
-    # sorted by (score desc) (time asc)
-    'leaderboards':
-      map: (doc) ->
-        if doc._id.slice(0, 6) == 'entry:' && doc.moves && doc.moves.length > 0
-          start = doc.moves[0].timestamp
-          end = doc.moves[doc.moves.length - 1].timestamp
-          time = end - start
-
-          # challengeId, highest score, lowest time
-          emit [doc.challengeId, -doc.score, time],
-            username: doc.username
-            score: doc.score
-            time: time
-
-    # User's entries
-    # sorted by (start desc)
-    'user_entries':
-      map: (doc) ->
-        if doc._id.slice(0, 6) == 'entry:' && doc.moves && doc.moves.length > 0
-          start = doc.moves[0].timestamp
-          end = doc.moves[doc.moves.length - 1].timestamp
-          time = end - start
-
-          # username, -start
-          emit [doc.username, -start],
-            id: doc._id
-            challengeId: doc.challengeId
-            start: start
-            score: doc.score
-            time: time
-
-  for own view, mapReduce of funcs
-    result[view] =
-      map: String(mapReduce.map)
-
-  return result
 
 class DB
   constructor: (dbname, serverUri, designName) ->
     @log = log.child DB:dbname
     @db = nano(serverUri).use(dbname)
     @designName = designName
+
+  @views: null
 
   # Gets doc by its id.
   get: (id, callback) ->
@@ -107,34 +57,32 @@ class DB
   #   limit: will include at most limit challenges.
   #
   # callback(err, objects.ChallengesList)
-  #challenges: (options, callback) ->
-  #  if arguments.length == 1
-  #    callback = options
-  #    options = {}
-  #
-  #  before = timestamp(options.before)
-  #  qs =
-  #    startkey: [@type]
-  #    endkey: [@type, {}]
-  #    limit: options.limit || DEFAULT_LIMIT
-  #
-  #  if (before)
-  #    qs.startkey.push(1 - before)
-  #
-  #  @db.view designName, 'challenges', qs, (err, result, headers) ->
-  #    if (err)
-  #      # Query parse errors have lower severity level,
-  #      # so we use WARN for them.
-  #      method = if err.error == 'query_parse_error' then 'warn' else 'error'
-  #      log[method] "Failed to query _#{designName}/challenges",
-  #        err: err,
-  #        qs: qs
-  #        headers: headers
-  #
-  #      return callback(err)
-  #
-  #    values = result.rows.map (row) -> row.value
-  #    callback(null, new objects.ChallengesList(values))
+  view: (design, view, options, callback) ->
+    if arguments.length == 1
+      callback = options
+      options = {}
+  
+    before = timestamp(options.before)
+    qs = {}
+    for own k, v of options
+      qs[k] = v
+    if qs.limit == undefined
+      qs.limit = DEFAULT_LIMIT
+  
+    @db.view design, view, qs, (err, result, headers) ->
+      if (err)
+        # Query parse errors have lower severity level,
+        # so we use WARN for them.
+        method = if err.error == 'query_parse_error' then 'warn' else 'error'
+        log[method] "Failed to query _#{design}/#{view}",
+          err: err,
+          qs: qs
+          headers: headers
+  
+        return callback(err)
+  
+      values = result.rows.map (row) -> row.value
+      callback(null, values)
 
   # Lists all the entries where `entry.challengeId = challengeId`
   # (views.leaderboards)
@@ -225,7 +173,7 @@ class DB
     dbViews = design.views
     changed = {}
   
-    for own name, mapReduce of views
+    for own name, mapReduce of @views
       if dbViews?[name]?.map != mapReduce.map
         changed[name] = mapReduce
   
@@ -238,10 +186,10 @@ class DB
     log.info "Design doc in database `_design/#{designName}` is different from
               design doc in app, recreating…",
       db_views: {views: design.views}
-      app_views: {views: views}
+      app_views: {views: @views}
       diff: changed
   
-    doc = {views: views, _rev: design._rev}
+    doc = {views: @views, _rev: design._rev}
     db.insert doc, "_design/#{designName}", callback
 
   # This will create Couch database @dbname at @serverUri
@@ -266,13 +214,13 @@ class DB
 
     vasync.waterfall [
       (cb) -> DB._init_get_info(db, designName, cb)
-      (db_exists, design, cb) ->
+      (db_exists, design, cb) =>
         if !design
           if !db_exists
             log.info "Database `#{dbname}` is missing, recreating…"
           log.info "Design doc `_design/#{designName}` is missing, recreating…"
 
-          doc = {views: views}
+          doc = {views: @views}
           createFn = couch.db.create.bind(couch.db, dbname)
           insertFn = db.insert.bind(db, doc, "_design/#{designName}", cb)
           return if db_exists then insertFn() else createFn(insertFn)
