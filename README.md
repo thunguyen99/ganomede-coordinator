@@ -42,13 +42,18 @@ All requests made to the coordinator API require an auth token, passed in the re
         "status": "active",
         "url": "http://ganomede.fovea.cc:43301",
         "gameOverData": { ... only if status is "gameover" ... }
+        "waiting": [ "some_username_2" ] ... only if status is "inactive"
     }
 
-Possible status:
+Possible `status`:
 
  * `inactive`
  * `active`
  * `gameover`
+
+When status is `inactive`, `waiting` will contains the list of username that didn't activate the game.
+
+# Single Game Activation [/coordinator/v1/auth/:token/:type/:version/games/:id/activation]
 
 ## Edit a game [PUT]
 

@@ -42,10 +42,25 @@ class CoordinatorApi
         req.params.user = account
         next()
 
+    # Populates req.params.game with the GameModel of ID given by req.params.id
+    gameMiddleware = (req, res, next) =>
+      game = @games.newModel id:req.params.id
+      game.fetch (err) ->
+        if err
+          log.error err
+          return sendError err, next
+        username = req.params.user.username
+        if !(true for p in game.players when p == username).length
+          err = new restify.UnauthorizedError('not authorized')
+          return sendError err, next
+        req.params.game = game
+        next()
+
     #
     # API Calls
     #
 
+    # GET /active-games
     getActiveGames = (req, res, next) =>
       type = "#{req.params.type}/#{req.params.version}"
       collection = @games.activeGames type, req.params.user.username
@@ -55,27 +70,39 @@ class CoordinatorApi
         res.send (m.toJSON() for m in collection.models)
         next()
 
+    # GET /games/:id
+    getGame = (req, res, next) =>
+      json = req.params.game.toJSON()
+      delete json.rev
+      res.send json
+      next()
+
+    # POST /games
     postGame = (req, res, next) =>
       body = req.body
       hasPlayers = body?.players?.length
       username = req.params.user.username
-      if (!hasPlayers or body.players[0].username != username)
+      if (!hasPlayers or body.players[0] != username)
         err = new restify.InvalidContentError('invalid content')
         return sendError err, next
       model = @games.newModel
         status: "inactive"
-        players: req.body.players
-        type: "#{req.params.type}/#{req.params.version}"
         url: @gameServers.random()
+        type: "#{req.params.type}/#{req.params.version}"
+        players: req.body.players
+        waiting: (p for p in body.players when p != username)
       model.save (err) ->
         if err
           return sendError(err, next)
         res.send model.toJSON()
         next()
 
+    server.get "#{prefix}/auth/:authToken/games/:id",
+      authMiddleware, gameMiddleware, getGame
+
     root = "/#{prefix}/auth/:authToken/:type/:version"
     server.get "#{root}/active-games", authMiddleware, getActiveGames
-    server.post "/#{root}/games", authMiddleware, postGame
+    server.post "#{root}/games", authMiddleware, postGame
 
 module.exports =
   create: (options = {}) -> new CoordinatorApi(options)

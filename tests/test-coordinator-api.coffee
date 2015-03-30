@@ -39,10 +39,22 @@ describe "CoordinatorApi", ->
     server.close ->
       helpers.dropDb(done)
 
-  describe "POST /games", ->
-    it 'should be tested', ->
-      #go()
-      #  .post endpoint("/auth/alice-token/rules/v1/games")
+  describe "GET /games/:id", ->
+    it 'returns a game the player is playing', (done) ->
+      go()
+        .get endpoint("/auth/p1-token/games/0000000000000000001")
+        .expect 200
+        .end (err, res) ->
+          expect(err).to.be(null)
+          res.body._id = res.body.id
+          delete res.body.id
+          expect(res.body).to.eql(samples.docs[0])
+          done()
+
+    it "won't return a game the player isn't playing", (done) ->
+      go()
+        .get endpoint("/auth/p1-token/games/0000000000000000003")
+        .expect 401, done
 
   describe "GET /active-games", ->
     it 'fetches the list of active games', (done) ->
@@ -69,5 +81,19 @@ describe "CoordinatorApi", ->
             url: 'http://fovea.cc'
           }])
           done()
+
+  describe "POST /games", ->
+    it 'adds games to the list', (done) ->
+      go()
+        .post endpoint("/auth/p1-token/rule/v1/games")
+        .send samples.postGame
+        .expect 200
+        .end (err, res) ->
+          expect(err).to.be(null)
+          samples.postGameRes.id = res.body.id
+          samples.postGameRes.rev = res.body.rev
+          expect(res.body).to.eql(samples.postGameRes)
+          done()
+
 
 # vim: ts=2:sw=2:et:

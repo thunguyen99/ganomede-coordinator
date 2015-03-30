@@ -1,3 +1,5 @@
+config = require '../config'
+
 createGame = (id, p1, p2) ->
   _id: id
   type: "rule/v1",
@@ -22,5 +24,14 @@ module.exports =
     p2:
       token: 'p2-token'
       account: {username: 'p2'}
+
+  postGame:
+    players: [ 'p1', 'p2' ]
+  postGameRes:
+    players: [ 'p1', 'p2' ]
+    waiting: [ 'p2' ]
+    type: 'rule/v1'
+    status: "inactive"
+    url: config.gameServers[0]
 
 # vim: ts=2:sw=2:et:
