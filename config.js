@@ -1,6 +1,11 @@
 var url = require('url');
 var pkg = require("./package.json");
 
+var gameServers = function() {
+    var e = process.env.GAME_SERVERS_URL;
+    return e ? e.split(",") : [ "http://localhost:8080" ];
+}
+
 module.exports = {
   port: +process.env.PORT || 8000,
   routePrefix: process.env.ROUTE_PREFIX || pkg.api,
@@ -21,5 +26,7 @@ module.exports = {
   authdb: {
     host: process.env.REDIS_AUTH_PORT_6379_TCP_ADDR || 'localhost',
     port: +process.env.REDIS_AUTH_PORT_6379_TCP_PORT || 6379
-  }
+  },
+
+  gameServers: gameServers()
 };

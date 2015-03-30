@@ -2,6 +2,7 @@ log = require "./log"
 authdb = require "authdb"
 restify = require "restify"
 config = require '../config'
+gameServers = require './game-servers'
 
 sendError = (err, next) ->
   log.error err
@@ -17,6 +18,8 @@ class CoordinatorApi
 
     # games collection
     @games = options.games
+
+    @gameServers = options.gameServers || gameServers
 
   addRoutes: (prefix, server) ->
 
@@ -53,8 +56,22 @@ class CoordinatorApi
         next()
 
     postGame = (req, res, next) =>
-      res.send ok:true
-      next()
+      body = req.body
+      hasPlayers = body?.players?.length
+      username = req.params.user.username
+      if (!hasPlayers or body.players[0].username != username)
+        err = new restify.InvalidContentError('invalid content')
+        return sendError err, next
+      model = @games.newModel
+        status: "inactive"
+        players: req.body.players
+        type: "#{req.params.type}/#{req.params.version}"
+        url: @gameServers.random()
+      model.save (err) ->
+        if err
+          return sendError(err, next)
+        res.send model.toJSON()
+        next()
 
     root = "/#{prefix}/auth/:authToken/:type/:version"
     server.get "#{root}/active-games", authMiddleware, getActiveGames

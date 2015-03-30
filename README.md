@@ -18,6 +18,7 @@ Configuration
  * `COUCH_GAMES_PORT_5984_TCP_PORT` - Port of the games couchdb
  * `REDIS_AUTH_PORT_6379_TCP_ADDR` - IP of the AuthDB redis
  * `REDIS_AUTH_PORT_6379_TCP_PORT` - Port of the AuthDB redis
+ * `GAME_SERVERS_URL` - Comma separated list of servers
 
 API
 ---
@@ -101,7 +102,6 @@ List all the "active" games of the authenticated player.
 ### body (application/json)
 
     {
-        "type": "triominos/v1",
         "players": [ "some_username_1", "some_username_2" ]
     }
 
