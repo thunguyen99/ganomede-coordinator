@@ -1,8 +1,8 @@
 {
-  "name": "turngame",
+  "name": "coordinator",
   "version": "1.0.1",
-  "api": "turngame/v1",
-  "description": "turngame micro service",
+  "api": "coordinator/v1",
+  "description": "coordinator micro service",
   "private": true,
   "main": "index.js",
   "scripts": {
