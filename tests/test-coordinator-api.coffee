@@ -18,6 +18,10 @@ endpoint = (path) ->
   return "/#{config.routePrefix}#{path || ''}"
 
 describe "Coordinator API", ->
+
+  if !helpers.dbEnabled()
+    return
+
   authdb = fakeAuthdb.createClient()
 
   before (done) ->
