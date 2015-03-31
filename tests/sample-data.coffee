@@ -41,4 +41,13 @@ module.exports =
     status: "active"
     url: config.gameServers[0]
 
+  postGame3:
+    players: [ 'p1' ]
+  postGameRes3:
+    players: [ 'p1' ]
+    waiting: [ ]
+    type: 'rule/v1'
+    status: "active"
+    url: config.gameServers[0]
+
 # vim: ts=2:sw=2:et:

@@ -89,6 +89,8 @@ class CoordinatorApi
         type: "#{req.params.type}/#{req.params.version}"
         players: req.body.players
         waiting: (p for p in body.players when p != username)
+      if model.waiting.length == 0
+        model.status = "active"
       model.save (err) ->
         if err
           return sendError(err, next)

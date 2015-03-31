@@ -89,6 +89,17 @@ describe "Coordinator API", ->
           expect(res.body).to.eql(samples.postGameRes)
           done()
 
+    it 'adds the game activated if 1 player only', (done) ->
+      go()
+        .post endpoint("/auth/p1-token/rule/v1/games")
+        .send samples.postGame3
+        .expect 200
+        .end (err, res) ->
+          expect(err).to.be(null)
+          samples.postGameRes3.id = res.body.id
+          expect(res.body).to.eql(samples.postGameRes3)
+          done()
+
   describe "POST /games/:id/activation", ->
 
     it 'allows only waiting players to activate', (done) ->
