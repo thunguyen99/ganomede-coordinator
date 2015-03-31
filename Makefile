@@ -8,7 +8,12 @@ check: install
 	./node_modules/.bin/coffeelint -q src tests
 
 test: check
-	./node_modules/.bin/mocha -b --recursive --compilers coffee:coffee-script/register tests | ./node_modules/.bin/bunyan -l ${BUNYAN_LEVEL}
+	( ./node_modules/.bin/pouchdb-server --level-backend memdown -p 3052 & echo $$! > pouchdb-server.pid ) > /dev/null
+	sleep 3
+	( sleep 10 ; kill `cat pouchdb-server.pid` 2> /dev/null ) &
+	COUCH_GAMES_PORT_5984_TCP_ADDR=127.0.0.1 COUCH_GAMES_PORT_5984_TCP_PORT=3052 ./node_modules/.bin/mocha -b --recursive --compilers coffee:coffee-script/register tests | ./node_modules/.bin/bunyan -l ${BUNYAN_LEVEL}
+	kill `cat pouchdb-server.pid` || true
+	rm -f config.json
 
 coverage: test
 	@mkdir -p doc

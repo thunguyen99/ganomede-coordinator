@@ -19,9 +19,6 @@ endpoint = (path) ->
 
 describe "Coordinator API", ->
 
-  if !helpers.dbEnabled()
-    return
-
   authdb = fakeAuthdb.createClient()
 
   before (done) ->

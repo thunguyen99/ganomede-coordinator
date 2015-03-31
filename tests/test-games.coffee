@@ -7,9 +7,6 @@ helpers = require './helpers'
 
 describe 'Games', () ->
 
-  if !helpers.dbEnabled()
-    return
-
   before (done) ->
     # (Easiest thing to do is to just test it right here.)
     helpers.initDb (err, db_) ->
