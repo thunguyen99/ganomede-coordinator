@@ -100,23 +100,49 @@ describe "Coordinator API", ->
           expect(res.body).to.eql(samples.postGameRes3)
           done()
 
-  describe "POST /games/:id/activation", ->
+  describe "POST /games/:id/join", ->
 
-    it 'allows only waiting players to activate', (done) ->
+    it 'allows only waiting players to join', (done) ->
       id = samples.postGameRes.id
       go()
-        .post endpoint("/auth/p3-token/games/#{id}/activation")
+        .post endpoint("/auth/p3-token/games/#{id}/join")
         .expect 401, done
 
-    it 'allows waiting players to activate', (done) ->
+    it 'allows waiting players to join', (done) ->
       id = samples.postGameRes.id
       samples.postGameRes2.id = id
       go()
-        .post endpoint("/auth/p2-token/games/#{id}/activation")
+        .post endpoint("/auth/p2-token/games/#{id}/join")
         .expect 200
         .end (err, res) ->
           expect(err).to.be(null)
           expect(res.body).to.eql(samples.postGameRes2)
           done()
+
+  describe "POST /games/:id/leave", ->
+
+    it 'rejects non participating players', (done) ->
+      id = samples.postGameRes.id
+      go()
+        .post endpoint("/auth/p3-token/games/#{id}/leave")
+        .expect 401, done
+
+    it 'allows non-waiting players to leave', (done) ->
+      id = samples.postGameRes.id
+      samples.leaveGameRes.id = id
+      go()
+        .post endpoint("/auth/p2-token/games/#{id}/leave")
+        .expect 200
+        .end (err, res) ->
+          console.dir err
+          expect(err).to.be(null)
+          expect(res.body).to.eql(samples.leaveGameRes)
+          done()
+
+    it 'rejects non waiting players', (done) ->
+      id = samples.postGameRes.id
+      go()
+        .post endpoint("/auth/p2-token/games/#{id}/leave")
+        .expect 403, done
 
 # vim: ts=2:sw=2:et:

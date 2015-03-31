@@ -53,7 +53,7 @@ Possible `status`:
 
 When status is `inactive`, `waiting` will contains the list of username that didn't activate the game.
 
-# Single Game Activation [/coordinator/v1/auth/:token/games/:id/activation]
+# Single Game Join [/coordinator/v1/auth/:token/games/:id/join]
 
 ## Edit a game [POST]
 
@@ -63,18 +63,41 @@ When status is `inactive`, `waiting` will contains the list of username that did
         "id": "ab12345789",
         "type": "triominos/v1",
         "players": [ "some_username_1", "some_username_2" ],
-        "status": "active",
+        "status": "inactive",
         "url": "http://ganomede.fovea.cc:43301",
         "waiting": [ "some_username_2" ] ... only if status is "inactive"
     }
 
-### response [423] Locked
+### response [403] Forbidden
 
-### design note
+### Note
 
-This is only allowed for inactive games to be called by a "waiting" user.
+ * This is only allowed for inactive games, when called by a "waiting" user.
+    * Will reply with status 403 otherwise.
+ * `status` will change to `active` when there is no more waiting players.
 
-Will reply with status 423 otherwise.
+# Single Game Leave [/coordinator/v1/auth/:token/games/:id/leave]
+
+## Edit a game [POST]
+
+### response [200] OK
+
+    {
+        "id": "ab12345789",
+        "type": "triominos/v1",
+        "players": [ "some_username_1", "some_username_2" ],
+        "status": "inactive",
+        "url": "http://ganomede.fovea.cc:43301",
+        "waiting": [ "some_username_2" ] ... only if status is "inactive"
+    }
+
+### response [403] Forbidden
+
+### Note
+
+ * This is only allowed when called by a non waiting user.
+    * Will reply with status 403 otherwise.
+ * `status` will change to `inactive`
 
 # Active Games Collection [/coordinator/v1/auth/:token/:type/:version/active-games]
 

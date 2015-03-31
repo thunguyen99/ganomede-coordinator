@@ -97,19 +97,8 @@ class CoordinatorApi
         res.send model.toJSON()
         next()
 
-    # POST /games/:id/activation
-    postActivation = (req, res, next) =>
-      username = req.params.user.username
+    saveGame = (req, res, next) =>
       game = req.params.game
-      isInactive = (game.status == "inactive")
-      isWaiting = (true for p in game.waiting when p == username).length
-      if !isInactive or !isWaiting
-        err = new restify.InvalidContentError('invalid content')
-        return sendError err, next
-      game.waiting = (p for p in game.waiting when p != username)
-      if game.waiting.length == 0
-        delete game.waiting
-        game.status = "active"
       game.save (err) ->
         if err
           return sendError(err, next)
@@ -117,11 +106,46 @@ class CoordinatorApi
         next()
         # TODO: Send notification
 
+    # POST /games/:id/join
+    postJoin = (req, res, next) =>
+      username = req.params.user.username
+      game = req.params.game
+      isInactive = (game.status == "inactive")
+      if !game.waiting
+        game.waiting = []
+      isWaiting = (true for p in game.waiting when p == username).length
+      if !isInactive or !isWaiting
+        err = new restify.ForbiddenError('Player not waiting')
+        return sendError err, next
+      game.waiting = (p for p in game.waiting when p != username)
+      if game.waiting.length == 0
+        delete game.waiting
+        game.status = "active"
+      next()
+
+    # POST /games/:id/leave
+    postLeave = (req, res, next) =>
+      username = req.params.user.username
+      game = req.params.game
+      if !game.waiting
+        game.waiting = []
+      isWaiting = (true for p in game.waiting when p == username).length
+      if isWaiting
+        err = new restify.ForbiddenError('Player already waiting')
+        return sendError err, next
+      game.waiting.push username
+      if game.status == "active"
+        game.status = "inactive"
+      next()
+
     server.get "#{prefix}/auth/:authToken/games/:id",
       authMiddleware, gameMiddleware, getGame
 
-    server.post "#{prefix}/auth/:authToken/games/:id/activation",
-      authMiddleware, gameMiddleware, postActivation
+    server.post "#{prefix}/auth/:authToken/games/:id/join",
+      authMiddleware, gameMiddleware, postJoin, saveGame
+
+    server.post "#{prefix}/auth/:authToken/games/:id/leave",
+      authMiddleware, gameMiddleware, postLeave, saveGame
 
     root = "/#{prefix}/auth/:authToken/:type/:version"
     server.get "#{root}/active-games", authMiddleware, getActiveGames

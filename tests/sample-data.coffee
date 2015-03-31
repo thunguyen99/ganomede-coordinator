@@ -50,4 +50,11 @@ module.exports =
     status: "active"
     url: config.gameServers[0]
 
+  leaveGameRes:
+    players: [ 'p1', 'p2' ]
+    waiting: [ 'p2' ]
+    type: 'rule/v1'
+    status: "inactive"
+    url: config.gameServers[0]
+
 # vim: ts=2:sw=2:et:
