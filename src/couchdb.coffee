@@ -188,7 +188,7 @@ class DB
       db_views: {views: design.views}
       app_views: {views: @views}
       diff: changed
-  
+
     doc = {views: @views, _rev: design._rev}
     db.insert doc, "_design/#{designName}", callback
 

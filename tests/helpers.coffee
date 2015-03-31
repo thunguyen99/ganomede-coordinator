@@ -13,8 +13,7 @@ initDb = (noSampleData, callback) ->
     callback = noSampleData
     noSampleData = false
 
-  DB.initialize config.couch,
-  (err, db) ->
+  DB.initialize config.couch, (err, db) ->
     log.info "initialization done"
     if (err)
       return callback(err)
@@ -27,7 +26,7 @@ initDb = (noSampleData, callback) ->
       callback(err, db)
 
 dropDb = (callback) ->
-  nano(config.couch.serverUri).db.destroy(config.couch.name, callback)
+  nano(config.couch.serverUri).db.destroy config.couch.name, callback
 
 module.exports =
   initDb: initDb
