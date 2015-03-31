@@ -97,7 +97,7 @@ List all the "active" games of the authenticated player.
         "players": [ "some_username", "amigo" ],
     }]
 
-# Inactive Games Collection [/coordinator/v1/auth/:token/games]
+# Inactive Games Collection [/coordinator/v1/auth/:token/:type/:version/games]
 
     + Parameters
         + token (string) ... User authentication token
