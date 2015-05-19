@@ -138,6 +138,14 @@ class CoordinatorApi
         game.status = "inactive"
       next()
 
+    # POST /games/:id/gameover
+    postGameOver = (req, res, next) =>
+      username = req.params.user.username
+      game = req.params.game
+      game.gameOverData = req.body.gameOverData
+      game.status = "gameover"
+      next()
+
     server.get "#{prefix}/auth/:authToken/games/:id",
       authMiddleware, gameMiddleware, getGame
 
@@ -146,6 +154,9 @@ class CoordinatorApi
 
     server.post "#{prefix}/auth/:authToken/games/:id/leave",
       authMiddleware, gameMiddleware, postLeave, saveGame
+
+    server.post "#{prefix}/auth/:authToken/games/:id/gameover",
+      authMiddleware, gameMiddleware, postGameOver, saveGame
 
     root = "/#{prefix}/auth/:authToken/:type/:version"
     server.get "#{root}/active-games", authMiddleware, getActiveGames

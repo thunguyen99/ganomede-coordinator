@@ -99,6 +99,24 @@ When status is `inactive`, `waiting` will contains the list of username that did
     * Will reply with status 403 otherwise.
  * `status` will change to `inactive`
 
+# Single Game Over [/coordinator/v1/auth/:token/games/:id/gameover]
+
+## Edit a game [POST]
+
+### response [200] OK
+
+    {
+        "gameOverData": { ... }
+    }
+
+### response [403] Forbidden
+
+### Note
+
+ * This is only allowed when called by a non waiting user.
+    * Will reply with status 403 otherwise.
+ * `status` will change to `inactive`
+
 # Active Games Collection [/coordinator/v1/auth/:token/:type/:version/active-games]
 
     + Parameters
