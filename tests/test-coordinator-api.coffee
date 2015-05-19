@@ -69,11 +69,13 @@ describe "Coordinator API", ->
             type: 'rule/v1'
             players: [ 'p1', 'p2' ]
             url: 'http://fovea.cc'
+            status: 'active'
           }, {
             id: '0000000000000000002'
             type: 'rule/v1'
             players: [ 'p3', 'p1' ]
             url: 'http://fovea.cc'
+            status: 'active'
           }])
           done()
 

@@ -127,15 +127,21 @@ class CoordinatorApi
     postLeave = (req, res, next) =>
       username = req.params.user.username
       game = req.params.game
-      if !game.waiting
-        game.waiting = []
-      isWaiting = (true for p in game.waiting when p == username).length
-      if isWaiting
-        err = new restify.ForbiddenError('Player already waiting')
-        return sendError err, next
-      game.waiting.push username
-      if game.status == "active"
+      if game.status == "active" or game.status == "inactive"
+        if !game.waiting
+          game.waiting = []
+        isWaiting = (true for p in game.waiting when p == username).length
+        if isWaiting
+          err = new restify.ForbiddenError('Player already waiting')
+          return sendError err, next
+        game.waiting.push username
         game.status = "inactive"
+      else if game.status == "gameover"
+        # remove from viewers
+        game.viewers = (p for p in game.viewers when p != username)
+      else
+        err = new restify.InternalError('Invalid game state')
+        return sendError err, next
       next()
 
     # POST /games/:id/gameover
@@ -144,6 +150,7 @@ class CoordinatorApi
       game = req.params.game
       game.gameOverData = req.body.gameOverData
       game.status = "gameover"
+      game.viewers = game.players
       next()
 
     server.get "#{prefix}/auth/:authToken/games/:id",
