@@ -236,7 +236,7 @@ class DB
           serverUri: serverUri
         return callback(err)
 
-      log.info "create DB"
+      log.info "Database ready"
       callback(null, new DB(dbname, serverUri, designName))
 
 module.exports = DB
